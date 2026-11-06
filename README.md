@@ -1,5 +1,9 @@
 # GLM 5.3 (full) EXL3 on DGX Spark: TP6 and TP4 builds
 
+> **Newer: [gr8](https://github.com/kindlingai/gr8)** serves the full GLM-5.3 on three to six DGX Sparks with its
+> own CUDA engine, without vLLM, and has the current numbers. This repo is the earlier vLLM build, kept for
+> reference.
+
 Two ways we serve the full GLM 5.3 model (MoE, 256 experts, MLA + sparse attention, one MTP layer) from the
 [davidsyoung/GLM-5.3-EXL3-TR3-3.25bpw](https://huggingface.co/davidsyoung/GLM-5.3-EXL3-TR3-3.25bpw) EXL3
 quantization with vLLM on NVIDIA DGX Spark (GB10) nodes:

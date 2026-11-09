@@ -12,13 +12,13 @@ quantization with vLLM on NVIDIA DGX Spark (GB10) nodes:
 |---|---|---|
 | nodes | 6 × DGX Spark | 4 × DGX Spark |
 | weights per node (planning estimate, not re-measured) | ~83 GB (experts re-fragmented six ways) | ~96 GB (native TP4 export) |
-| prefill 8K / 32K (tok/s) | 1000 / 958 | 783 / 769 |
-| prose decode, single stream (tok/s) | 33.8 at MTP k=2; 27.7 at k=4 (shipped) | 19.8 at k=4 |
+| prefill 8K / 32K (tok/s) | 1000 / 958 | 783.2 / 769.4 |
+| prose decode, single stream (tok/s) | 33.8 at MTP k=2; 27.7 at k=4 (shipped) | 19.78 at k=4 |
 | KV pool / max context | 803,968 tokens / 360K | 730,750 tokens / 360K |
 | dense-layer quality gate (KL vs BF16) | PASS, 0.0284 | PASS, 0.0268 (thin margin) |
 
-Numbers are single-request, one boot each, on our cluster. Read [RESULTS.md](RESULTS.md) for every step,
-the benchmark definitions and the caveats before comparing them with anything.
+Numbers are single-request, one boot each, on our cluster, measured 2026-09-26 to 2026-09-30. Read
+[RESULTS.md](RESULTS.md) for every step, the benchmark definitions and the caveats before comparing them with anything.
 
 [kindling.json](kindling.json) has these numbers in a form a program can read; the Kindling AI site shows this
 recipe from it. A change to this table changes kindling.json too. [AGENTS.md](AGENTS.md) has the rules.
@@ -51,11 +51,13 @@ Both builds start from vLLM on the MiaAI-Lab ARM image with the r17 EXL3 "TR3" l
 
 1. **Image.** `image/build-context.sh tp4|tp6 <r17 b12x package dir> <context dir>`, then `docker build` there
    (TP6 is three Dockerfiles in order: `Dockerfile.1-fragments` → `.2-fastload` → `.3-e3`, tag each as the next
-   one's `FROM`). The r17 b12x source is not vendored here; `THIRD_PARTY_NOTICES.md` lists the base commit and
-   release patch. The base image is `ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-e3-20260907`.
+   one's `FROM`). The r17 b12x source is not vendored here; [image/README.md](image/README.md) says how to get it
+   from the base commit and the release patch. The base image is
+   `ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-e3-20260907`.
 2. **Weights.** Download the TR3 3.25 bpw checkpoint to every node. TP4 uses it as is. TP6: on each node run
    `runtime/tp6-fragments/export_rank.py --source <ckpt> --output <rank dir> --rank <r>` (stdlib only, byte-copies
-   only that rank's fragments; it expects a `MANIFEST.sha256` of the source files).
+   only that rank's fragments; it expects a `MANIFEST.sha256` of the source files: the checkpoint ships one next to
+   the weights, so download it with them).
 3. **GPTQ codes.** Download our solved per-rank codes from Hugging Face,
    [adapt-ai-systems/glm-5.3-full-exl3-gptq-dense](https://huggingface.co/adapt-ai-systems/glm-5.3-full-exl3-gptq-dense)
    (`tp6/r<rank>/` or `tp4/r<rank>/`), or solve your own per rank with `gptq/` (a capture boot, then a CPU solve;
@@ -103,10 +105,11 @@ with 0 errors and 0 stalls (no A soak for comparison).
 
 **Hangs.** D hung in 2 of its 20 boots on our cluster, both early and at full clock: once during boot (a
 shared-memory broadcast stall, while our network was having an outage) and once on the first cold 8K prefill after
-a short request, the same trigger as the TP6 prefill hang under Caveats. The 16 D boots since then, 15 of them with
-clocks locked to ≤ 2200 MHz, all came up on the first try and answered a short and a cold ~8K request (0 of 16 hung;
-that still allows a hang rate of up to about 17% at 95% confidence). Check `/health` and send one short and one cold
-~8K request after every boot before you rely on D.
+a short request, the same trigger as the TP6 prefill hang under Caveats. Two more of the 20 boots came before the 16
+below and are in neither count. The 16 D boots since then, 15 of them with clocks locked to ≤ 2200 MHz, all came up
+on the first try and answered a short and a cold ~8K request (0 of 16 hung; that still allows a hang rate of up to
+about 17% at 95% confidence). Check `/health` and send one short and one cold ~8K request after every boot before you
+rely on D.
 
 ## Caveats
 

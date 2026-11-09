@@ -13,4 +13,4 @@ All scripts talk to the vLLM OpenAI server (`--url`, default `http://localhost:8
 - `accept.py`: per-position MTP acceptance and streamed decode speed per workload (structured, code, prose), from
   the server's `/metrics` counters. It drives a decode prompt harness (`HARNESS_DIR` with `decode.py` and its
   frozen prompts) adapted from Matt Mastracci's `dev/repro/decode.py` in
-  [mmastrac/glm-5.3-flash-4x-gx10](https://github.com/mmastrac/glm-5.3-flash-4x-gx10); the harness is not included.
+  [kindlingai/glm-5.3-flash-gx10](https://github.com/kindlingai/glm-5.3-flash-gx10); the harness is not included.

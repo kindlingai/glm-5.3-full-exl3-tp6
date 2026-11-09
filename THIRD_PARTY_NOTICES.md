@@ -26,7 +26,7 @@ Everything not listed below is MIT ([LICENSE](LICENSE)) and was written for thes
 - **GB10 prefill fix** in `image/patch_runtime.py` (persistent top-k off): from
   [drowzeys/keys-GLM-5.3-EXL3](https://huggingface.co/drowzeys/keys-GLM-5.3-EXL3/blob/main/serving/Dockerfile.keys).
 - **Decode prompt harness** used by `eval/accept.py`: adapted from Matt Mastracci's
-  [glm-5.3-flash-4x-gx10](https://github.com/mmastrac/glm-5.3-flash-4x-gx10) `dev/repro/decode.py`; not included.
+  [glm-5.3-flash-gx10](https://github.com/kindlingai/glm-5.3-flash-gx10) `dev/repro/decode.py`; not included.
 
 ## Credits
 
